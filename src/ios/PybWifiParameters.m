@@ -28,7 +28,7 @@
     {
         captiveNetworkDict= CNCopyCurrentNetworkInfo(CFArrayGetValueAtIndex(supportInterfaces, 0));
     }
-    NSString *ssid = "";
+    NSString *ssid = @"";
     if(captiveNetworkDict != nil)
     {
         NSDictionary *dict = (__bridge NSDictionary *)captiveNetworkDict;
