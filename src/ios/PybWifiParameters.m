@@ -21,32 +21,37 @@
 
 -(void)getCurrentWifiSsid:(CDVInvokedUrlCommand *)command
 {
-	CDVPluginResult * pluginResult = nil;
-	CFArrayRef supportInterfaces = CNCopySupportedInterfaces();
-    CFDictionaryRef captiveNetworkDict = nil;
-    if(supportInterfaces != nil)
-    {
-        captiveNetworkDict= CNCopyCurrentNetworkInfo(CFArrayGetValueAtIndex(supportInterfaces, 0));
-    }
-    NSString *ssid = @"";
-    if(captiveNetworkDict != nil)
-    {
-        NSDictionary *dict = (__bridge NSDictionary *)captiveNetworkDict;
-        ssid = [dict objectForKey:@"SSID"];
-        if(ssid == NULL)
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
+        CDVPluginResult * pluginResult = nil;
+        CFArrayRef supportInterfaces = CNCopySupportedInterfaces();
+        CFDictionaryRef captiveNetworkDict = nil;
+        if(supportInterfaces != nil)
         {
-            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+            captiveNetworkDict= CNCopyCurrentNetworkInfo(CFArrayGetValueAtIndex(supportInterfaces, 0));
+        }
+        NSString *ssid = @"";
+        if(captiveNetworkDict != nil)
+        {
+            NSDictionary *dict = (__bridge NSDictionary *)captiveNetworkDict;
+            ssid = [dict objectForKey:@"SSID"];
+            if(ssid == NULL)
+            {
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
+            }
+            else
+            {
+                pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:ssid];
+            }
         }
         else
         {
-        	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:ssid];
+            pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
         }
-    }
-    else
-    {
-    	pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
-    }
-    [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+        dispatch_async(dispatch_get_main_queue(), ^(void){
+            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+        });
+    });
+	
 }
 
 @end
