@@ -21,7 +21,7 @@
 
 -(void)getCurrentWifiSsid:(CDVInvokedUrlCommand *)command
 {
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^(void){
+    [self.commandDelegate runInBackground: ^{
         CDVPluginResult * pluginResult = nil;
         CFArrayRef supportInterfaces = CNCopySupportedInterfaces();
         CFDictionaryRef captiveNetworkDict = nil;
@@ -47,11 +47,8 @@
         {
             pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR];
         }
-        dispatch_async(dispatch_get_main_queue(), ^(void){
-            [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
-        });
-    });
-	
+        [self.commandDelegate sendPluginResult:pluginResult callbackId: command.callbackId];
+    }];
 }
 
 @end
